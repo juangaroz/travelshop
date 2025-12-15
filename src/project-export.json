@@ -1,0 +1,376 @@
+{
+  "projectName": "TravelShop Partner Portal",
+  "description": "Sistema de Gestión de Tours (TMS) para agentes de viajes con AI Travel Assistant integrado",
+  "version": "1.0.0",
+  "createdDate": "2024-12-12",
+  "technology": {
+    "framework": "React",
+    "styling": "Tailwind CSS",
+    "uiComponents": "shadcn/ui",
+    "features": [
+      "AI Travel Assistant con conversación inteligente",
+      "Sistema de scoring y recomendación de tours",
+      "Base de datos de 12 tours expandidos",
+      "Portal administrativo completo",
+      "Navegación integrada",
+      "Sistema de reservaciones",
+      "Centro de capacitación",
+      "Gestión de recursos y materiales"
+    ]
+  },
+  "branding": {
+    "colors": {
+      "primary": "#D32F2F / #C9284B (Rojo carmesí)",
+      "secondary": "#2B3E77 (Azul navy)"
+    },
+    "name": "TravelShop Partner Portal",
+    "targetUser": "Agentes de viajes que representan diferentes agencias"
+  },
+  "projectStructure": {
+    "mainFiles": [
+      "/App.tsx",
+      "/components/AITravelAssistant.tsx",
+      "/data/tours-data.ts"
+    ],
+    "pages": [
+      "/pages/landing.tsx",
+      "/pages/login.tsx",
+      "/pages/dashboard.tsx",
+      "/pages/tours-list.tsx",
+      "/pages/tour-detail-new.tsx",
+      "/pages/booking-form.tsx",
+      "/pages/reservations-list.tsx",
+      "/pages/reservation-detail-new.tsx",
+      "/pages/resources-list-new.tsx",
+      "/pages/resource-detail.tsx",
+      "/pages/training-hub.tsx",
+      "/pages/training-video.tsx"
+    ],
+    "components": [
+      "/components/layout.tsx",
+      "/components/sidebar.tsx",
+      "/components/topbar.tsx",
+      "/components/AITravelAssistant.tsx",
+      "/components/SmartSearchWizard.tsx",
+      "/components/TourRouteMap.tsx",
+      "/components/ReservationPDFPreview.tsx",
+      "/components/LiveChatWidget.tsx",
+      "/components/status-badge.tsx"
+    ],
+    "uiComponents": [
+      "/components/ui/button.tsx",
+      "/components/ui/card.tsx",
+      "/components/ui/input.tsx",
+      "/components/ui/dialog.tsx",
+      "/components/ui/tabs.tsx",
+      "/components/ui/badge.tsx",
+      "/components/ui/select.tsx",
+      "/components/ui/calendar.tsx",
+      "/components/ui/accordion.tsx",
+      "/components/ui/alert.tsx",
+      "/components/ui/avatar.tsx",
+      "/components/ui/checkbox.tsx",
+      "/components/ui/dropdown-menu.tsx",
+      "/components/ui/form.tsx",
+      "/components/ui/label.tsx",
+      "/components/ui/popover.tsx",
+      "/components/ui/scroll-area.tsx",
+      "/components/ui/separator.tsx",
+      "/components/ui/sheet.tsx",
+      "/components/ui/slider.tsx",
+      "/components/ui/sonner.tsx",
+      "/components/ui/switch.tsx",
+      "/components/ui/table.tsx",
+      "/components/ui/textarea.tsx",
+      "/components/ui/tooltip.tsx"
+    ],
+    "data": [
+      "/data/tours-data.ts"
+    ],
+    "styles": [
+      "/styles/globals.css"
+    ]
+  },
+  "mainFeatures": {
+    "aiTravelAssistant": {
+      "location": "/components/AITravelAssistant.tsx",
+      "description": "Asistente AI conversacional que ayuda a encontrar tours perfectos",
+      "capabilities": [
+        "Conversación inteligente paso a paso",
+        "Preguntas sobre destino, número de personas, tipo de viaje y presupuesto",
+        "Sistema de scoring inteligente para matching de tours",
+        "Garantiza mostrar siempre al menos 3 tours recomendados",
+        "Tarjetas visuales de tours con imágenes, precios y detalles",
+        "Quick replies interactivos",
+        "Animaciones de 'escribiendo' y delays realistas",
+        "Integrado en landing page y portal administrativo"
+      ],
+      "conversationFlow": [
+        "1. Saludo inicial y pregunta por destino",
+        "2. Destino seleccionado → pregunta cantidad de personas",
+        "3. Personas → pregunta tipo de viaje (Cultural, Playa, Aventura, Ciudad)",
+        "4. Tipo de viaje → pregunta presupuesto (Económico, Medio, Alto)",
+        "5. Presupuesto → muestra tours recomendados con sistema de scoring"
+      ],
+      "scoringSystem": {
+        "description": "Sistema inteligente que evalúa tours según criterios del usuario",
+        "criteria": {
+          "destination": "+3 puntos por coincidencia exacta",
+          "category": "+2 puntos por coincidencia de tipo de viaje",
+          "budget": "+2 puntos si está en rango, +1 si está cerca (20% flexibilidad)"
+        },
+        "logic": [
+          "Exact matches: score >= 5 puntos",
+          "Partial matches: score >= 2 puntos",
+          "Siempre muestra mínimo 3 tours",
+          "Prioriza exact matches, luego partial, luego otros tours"
+        ]
+      }
+    },
+    "toursDatabase": {
+      "location": "/data/tours-data.ts",
+      "totalTours": 12,
+      "destinations": [
+        "Caribe (Cancún)",
+        "Europa (París, Roma, Barcelona, Ámsterdam)",
+        "Sudamérica (Patagonia, Buenos Aires, Ushuaia)",
+        "Norteamérica (Nueva York, Boston, Washington DC)",
+        "Asia (Japón, Tokio, Kioto)",
+        "Centroamérica (Costa Rica)",
+        "África (Safari)",
+        "Oceanía (Nueva Zelanda)",
+        "Emiratos (Dubai)"
+      ],
+      "categories": [
+        "Playa",
+        "Cultural",
+        "Aventura",
+        "Ciudad",
+        "Naturaleza",
+        "Lujo"
+      ],
+      "tourStructure": {
+        "basicInfo": [
+          "id",
+          "name",
+          "subtitle",
+          "destination",
+          "category",
+          "tags",
+          "duration",
+          "price",
+          "priceText",
+          "cities"
+        ],
+        "media": [
+          "image (principal)",
+          "gallery (3-4 imágenes)"
+        ],
+        "details": [
+          "description",
+          "highlights (6 items)",
+          "included (servicios incluidos)",
+          "notIncluded (no incluidos)",
+          "recommendations"
+        ],
+        "itinerary": [
+          "Array de días con título, descripción y actividades"
+        ],
+        "mapRoute": [
+          "Array de coordenadas para visualización de ruta"
+        ]
+      }
+    },
+    "navigation": {
+      "menuOrder": [
+        "Inicio (Dashboard)",
+        "Buscador (Tours)",
+        "Reservas",
+        "Recursos y Materiales",
+        "Centro de Capacitación"
+      ],
+      "routing": "State-based con handleNavigate function"
+    },
+    "sections": {
+      "authentication": [
+        "Landing page con hero section",
+        "Login page para agentes"
+      ],
+      "dashboard": [
+        "Stats cards (reservaciones, tours, recursos)",
+        "Reservaciones recientes",
+        "Recursos nuevos",
+        "Tours con salidas próximas",
+        "Quick actions"
+      ],
+      "tours": [
+        "Lista de tours con filtros",
+        "Buscador inteligente",
+        "Detalle de tour completo",
+        "Mapa de ruta interactivo",
+        "Galería de imágenes",
+        "Itinerario día por día",
+        "Botón de reservación"
+      ],
+      "reservations": [
+        "Lista de reservaciones con estados",
+        "Detalle de reservación",
+        "Formulario de nueva reservación",
+        "PDF preview",
+        "Estados: confirmed, pending, docs-pending, cancelled"
+      ],
+      "resources": [
+        "Categorías: Brochures, Videos, Tarifarios, Manuales",
+        "Descarga de materiales",
+        "Preview de recursos",
+        "Sistema de favoritos"
+      ],
+      "training": [
+        "Video hub con categorías",
+        "Video player",
+        "Certificaciones",
+        "Progreso de capacitación"
+      ]
+    }
+  },
+  "keyComponents": {
+    "AITravelAssistant": {
+      "file": "/components/AITravelAssistant.tsx",
+      "type": "Conversational AI Chat Widget",
+      "state": [
+        "isOpen",
+        "messages",
+        "isTyping",
+        "conversationState (hasDestination, hasPeople, hasTravelType, hasBudget)"
+      ],
+      "functions": [
+        "detectIntent() - Detecta intención del usuario",
+        "filterTours() - Sistema de scoring para matching",
+        "generateAIResponse() - Genera respuestas contextuales",
+        "addAIMessage() - Agrega mensaje del AI",
+        "addUserMessage() - Agrega mensaje del usuario",
+        "handleQuickReply() - Maneja respuestas rápidas"
+      ]
+    },
+    "Layout": {
+      "file": "/components/layout.tsx",
+      "includes": [
+        "Sidebar con navegación",
+        "Topbar con búsqueda y usuario",
+        "AI Travel Assistant integrado",
+        "Live Chat Widget"
+      ]
+    },
+    "TourRouteMap": {
+      "file": "/components/TourRouteMap.tsx",
+      "description": "Mapa interactivo que muestra ruta del tour",
+      "markers": "Start, Stop, End"
+    }
+  },
+  "dataStructures": {
+    "TourData": {
+      "id": "string",
+      "name": "string",
+      "subtitle": "string",
+      "destination": "string",
+      "category": "string",
+      "tags": "string[]",
+      "image": "string (URL)",
+      "gallery": "string[] (URLs)",
+      "duration": "string",
+      "price": "number",
+      "priceText": "string",
+      "cities": "string[]",
+      "description": "string",
+      "highlights": "string[]",
+      "included": "string[]",
+      "notIncluded": "string[]",
+      "itinerary": "Array<{day, title, description, activities}>",
+      "mapRoute": "Array<{name, lat, lng, type}>",
+      "recommendations": "string[]"
+    },
+    "Message": {
+      "id": "number",
+      "text": "string",
+      "sender": "ai | user",
+      "time": "string",
+      "quickReplies": "string[] (optional)",
+      "tours": "TourData[] (optional)"
+    },
+    "ConversationState": {
+      "hasDestination": "boolean",
+      "hasPeople": "boolean",
+      "hasTravelType": "boolean",
+      "hasBudget": "boolean",
+      "destination": "string (optional)",
+      "people": "string (optional)",
+      "travelType": "string (optional)",
+      "budget": "string (optional)"
+    }
+  },
+  "integrations": {
+    "unsplash": "Para imágenes de tours y destinos",
+    "lucideReact": "Para iconografía",
+    "tailwindCSS": "Para estilos",
+    "shadcnUI": "Para componentes base"
+  },
+  "deployment": {
+    "platform": "Figma Make / Web Application",
+    "entryPoint": "/App.tsx",
+    "buildTool": "React + Vite (implícito)"
+  },
+  "futureEnhancements": [
+    "Integración con API de backend real",
+    "Sistema de autenticación completo",
+    "Base de datos persistente",
+    "Pagos en línea",
+    "Notificaciones push",
+    "Multi-idioma",
+    "App móvil nativa"
+  ],
+  "notes": [
+    "El AI Assistant usa detección de intenciones flexible con múltiples keywords por categoría",
+    "El sistema de scoring garantiza siempre mostrar mínimo 3 tours",
+    "Todas las imágenes vienen de Unsplash con queries específicas",
+    "Los tours tienen datos completos: itinerario, mapa, galería, precios, etc.",
+    "La plataforma está diseñada específicamente para agentes de viajes B2B",
+    "Los colores corporativos (#D32F2F y #2B3E77) se usan consistentemente",
+    "El AI Assistant está integrado tanto en landing como en portal admin"
+  ],
+  "codebaseHighlights": {
+    "totalFiles": "~70 archivos",
+    "linesOfCode": "~15,000 líneas aproximadamente",
+    "mainLanguage": "TypeScript/TSX",
+    "styling": "Tailwind CSS con clases utility",
+    "stateManagement": "React useState hooks",
+    "routing": "Custom state-based navigation"
+  },
+  "documentation": {
+    "guidelines": "/guidelines/Guidelines.md",
+    "attributions": "/Attributions.md"
+  },
+  "exportInfo": {
+    "exportedBy": "AI Assistant",
+    "exportDate": "2024-12-12",
+    "format": "JSON",
+    "purpose": "Project documentation and portability",
+    "usage": "Este JSON documenta la estructura completa del proyecto. Para exportar el código real, necesitarías copiar todos los archivos individuales desde el sistema de archivos."
+  },
+  "howToUse": {
+    "step1": "Importar este JSON como referencia de arquitectura",
+    "step2": "Recrear la estructura de carpetas según projectStructure",
+    "step3": "Copiar el contenido de cada archivo desde el proyecto original",
+    "step4": "Instalar dependencias: react, tailwindcss, lucide-react, shadcn/ui",
+    "step5": "Ejecutar npm install && npm run dev",
+    "mainDependencies": [
+      "react",
+      "react-dom",
+      "tailwindcss",
+      "lucide-react",
+      "@radix-ui/* (shadcn/ui components)",
+      "recharts (para gráficas)",
+      "leaflet (para mapas)",
+      "sonner (para toasts)"
+    ]
+  }
+}
