@@ -23,31 +23,39 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
     setErrorMsg(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-    setLoading(false);
+      if (error) {
+        setErrorMsg(error.message || "Credenciales inválidas");
+        return;
+      }
 
-    if (error) {
-      setErrorMsg(error.message);
-      return;
+      const session = data?.session ?? (await supabase.auth.getSession()).data.session;
+      if (!session) {
+        setErrorMsg("No se pudo iniciar sesión (sin sesión). Intenta de nuevo.");
+        return;
+      }
+
+      onNavigate("dashboard");
+    } catch (err: any) {
+      setErrorMsg(err?.message ?? "Error iniciando sesión");
+    } finally {
+      setLoading(false);
     }
-
-    onNavigate("dashboard");
   };
 
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-white">
-        {/* Back to Home Button */}
         <Button
           variant="ghost"
           className="absolute top-6 left-6"
           onClick={() => onNavigate("landing")}
-          type="button"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver al inicio
@@ -72,10 +80,9 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
                   id="email"
                   type="email"
                   placeholder="agente@agencia.com"
-                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
+                  required
                 />
               </div>
 
@@ -84,27 +91,15 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
                 <Input
                   id="password"
                   type="password"
-                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  required
                 />
               </div>
 
               {errorMsg && (
-                <div className="text-sm text-red-600">
-                  {errorMsg}
-                </div>
+                <div className="text-sm text-red-600">{errorMsg}</div>
               )}
-
-              <Button
-                type="button"
-                variant="link"
-                className="px-0 text-primary-600 hover:text-primary-700"
-                onClick={() => alert("Luego conectamos recuperación de contraseña.")}
-              >
-                ¿Olvidaste tu contraseña?
-              </Button>
 
               <Button
                 type="submit"

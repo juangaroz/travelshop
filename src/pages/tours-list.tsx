@@ -1,349 +1,421 @@
-import { useState } from "react";
-import { Card, CardContent } from "../components/ui/card";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { Search, MapPin, Calendar, DollarSign, Users, Plane, Sparkles } from "lucide-react";
-import { SmartSearchWizard, SearchFilters } from "../components/SmartSearchWizard";
+import { Label } from "../components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Textarea } from "../components/ui/textarea";
 
 interface ToursListPageProps {
-  onNavigate: (page: string, tourId?: string) => void;
-  searchQuery?: string;
+  onNavigate: (page: string, id?: string) => void;
+  searchQuery: string;
 }
 
-const tours = [
-  {
-    id: "1",
-    name: "Cancún Todo Incluido Premium",
-    destination: "Caribe",
-    region: "México",
-    cities: ["Cancún", "Playa del Carmen"],
-    category: "Playa",
-    duration: "6 días / 5 noches",
-    price: 18500,
-    priceText: "desde $18,500 MXN",
-    includeFlight: true,
-    image: "https://images.unsplash.com/photo-1653959747793-c7c3775665f0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cm9waWNhbCUyMHBhcmFkaXNlJTIwYmVhY2glMjBhZXJpYWx8ZW58MXx8fHwxNzYzNjg2OTk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    departures: ["15 Dic", "22 Dic", "29 Dic"],
-    available: 8
-  },
-  {
-    id: "2",
-    name: "Europa Clásica 15 Días",
-    destination: "Europa",
-    region: "Europa Occidental",
-    cities: ["París", "Roma", "Barcelona", "Ámsterdam"],
-    category: "Cultural",
-    duration: "15 días / 14 noches",
-    price: 85000,
-    priceText: "desde $85,000 MXN",
-    includeFlight: true,
-    image: "https://images.unsplash.com/photo-1704301123672-929bec118be6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzYW50b3JpbmklMjBncmVlY2UlMjBibHVlJTIwZG9tZXxlbnwxfHx8fDE3NjM1Nzk5MjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    departures: ["20 Dic", "10 Ene", "25 Ene"],
-    available: 4
-  },
-  {
-    id: "3",
-    name: "Patagonia Aventura",
-    destination: "Sudamérica",
-    region: "América del Sur",
-    cities: ["Buenos Aires", "El Calafate", "Ushuaia"],
-    category: "Aventura",
-    duration: "10 días / 9 noches",
-    price: 65000,
-    priceText: "desde $65,000 MXN",
-    includeFlight: true,
-    image: "https://images.unsplash.com/photo-1729476266005-b14af8894f5e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwYXRhZ29uaWElMjBnbGFjaWVyJTIwbW91bnRhaW5zfGVufDF8fHx8MTc2MzY4Njk5OXww&ixlib=rb-4.1.0&q=80&w=1080",
-    departures: ["10 Ene", "05 Feb", "20 Feb"],
-    available: 12
-  },
-  {
-    id: "4",
-    name: "Nueva York y Boston Express",
-    destination: "Norteamérica",
-    region: "Estados Unidos",
-    cities: ["Nueva York", "Boston", "Washington DC"],
-    category: "Ciudad",
-    duration: "7 días / 6 noches",
-    price: 35000,
-    priceText: "desde $35,000 MXN",
-    includeFlight: false,
-    image: "https://images.unsplash.com/photo-1583680093447-2acef3f67f0f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkdWJhaSUyMHNreWxpbmUlMjBuaWdodCUyMGxpZ2h0c3xlbnwxfHx8fDE3NjM2ODcwMDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    departures: ["18 Dic", "28 Dic", "15 Ene"],
-    available: 6
-  },
-  {
-    id: "5",
-    name: "Riviera Maya Todo Incluido",
-    destination: "Caribe",
-    region: "México",
-    cities: ["Cancún", "Tulum", "Cozumel"],
-    category: "Playa",
-    duration: "7 días / 6 noches",
-    price: 22500,
-    priceText: "desde $22,500 MXN",
-    includeFlight: true,
-    image: "https://images.unsplash.com/photo-1637576308588-6647bf80944d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxkaXZlcyUyMG92ZXJ3YXRlciUyMGJ1bmdhbG93JTIwc3Vuc2V0fGVufDF8fHx8MTc2MzY4Njk5OXww&ixlib=rb-4.1.0&q=80&w=1080",
-    departures: ["12 Dic", "19 Dic", "02 Ene"],
-    available: 10
-  },
-  {
-    id: "6",
-    name: "París y Ámsterdam Romántico",
-    destination: "Europa",
-    region: "Europa Occidental",
-    cities: ["París", "Ámsterdam"],
-    category: "Cultural",
-    duration: "8 días / 7 noches",
-    price: 58000,
-    priceText: "desde $58,000 MXN",
-    includeFlight: false,
-    image: "https://images.unsplash.com/photo-1600623751202-59d68eb53d58?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhbmNpZW50JTIwdGVtcGxlJTIwc3Vuc2V0JTIwYXNpYXxlbnwxfHx8fDE3NjM2ODY5OTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    departures: ["14 Ene", "28 Ene", "14 Feb"],
-    available: 5
-  }
-];
+type Tour = {
+  id: string;
+  title: string;
+  description: string | null;
+  destination: string | null;
+  duration_text: string | null;
+  highlights: string | null;
+  includes: string | null;
+  excludes: string | null;
+  meeting_point: string | null;
+  itinerary: string | null;
+  cancellation_policy: string | null;
+  terms: string | null;
+  price: number | null;
+  currency: string | null;
+  cover_image_url: string | null;
+  is_published: boolean;
+  created_at: string;
+};
 
-export function ToursListPage({ onNavigate, searchQuery: initialSearchQuery }: ToursListPageProps) {
-  const [searchQuery, setSearchQuery] = useState(initialSearchQuery || "");
-  const [selectedDestination, setSelectedDestination] = useState("all");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedRegion, setSelectedRegion] = useState("all");
-  const [selectedFlight, setSelectedFlight] = useState("all");
-  const [selectedPriceRange, setSelectedPriceRange] = useState("all");
-  const [smartSearchOpen, setSmartSearchOpen] = useState(false);
+export function ToursListPage({ onNavigate, searchQuery }: ToursListPageProps) {
+  const { role, session } = useAuth();
+  const isAdmin = role === "admin";
 
-  const handleSmartSearch = (filters: SearchFilters) => {
-    // Apply filters from smart search
-    if (filters.tourType === "all-inclusive") setSelectedCategory("Playa");
-    if (filters.tourType === "cultural") setSelectedCategory("Cultural");
-    if (filters.tourType === "adventure") setSelectedCategory("Aventura");
-    if (filters.tourType === "city") setSelectedCategory("Ciudad");
-    
-    if (filters.budget === "low") setSelectedPriceRange("low");
-    if (filters.budget === "medium") setSelectedPriceRange("medium");
-    if (filters.budget === "high" || filters.budget === "luxury") setSelectedPriceRange("high");
-    
-    // Show notification
-    alert(`Buscador inteligente aplicado. Filtros: ${filters.countries.length} países, ${filters.activities.length} actividades seleccionadas`);
+  const [loading, setLoading] = useState(true);
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  // Admin: form
+  const [creating, setCreating] = useState(false);
+
+  const [newTitle, setNewTitle] = useState("");
+  const [newDestination, setNewDestination] = useState("");
+  const [newDuration, setNewDuration] = useState("");
+  const [newShortDesc, setNewShortDesc] = useState("");
+
+  const [newHighlights, setNewHighlights] = useState("");
+  const [newIncludes, setNewIncludes] = useState("");
+  const [newExcludes, setNewExcludes] = useState("");
+  const [newMeetingPoint, setNewMeetingPoint] = useState("");
+  const [newItinerary, setNewItinerary] = useState("");
+  const [newCancellation, setNewCancellation] = useState("");
+  const [newTerms, setNewTerms] = useState("");
+
+  const [newPrice, setNewPrice] = useState<string>("");
+  const [newCurrency, setNewCurrency] = useState("MXN");
+  const [newPublished, setNewPublished] = useState(false);
+  const [newCoverFile, setNewCoverFile] = useState<File | null>(null);
+
+  const loadTours = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      let q = supabase
+        .from("tours")
+        .select(
+          "id,title,description,destination,duration_text,highlights,includes,excludes,meeting_point,itinerary,cancellation_policy,terms,price,currency,cover_image_url,is_published,created_at"
+        )
+        .order("created_at", { ascending: false });
+
+      if (role === "agent") q = q.eq("is_published", true);
+
+      const { data, error: err } = await q;
+      if (err) throw err;
+
+      setTours((data ?? []) as Tour[]);
+    } catch (e: any) {
+      setError(e?.message ?? "Error cargando tours");
+      setTours([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredTours = tours.filter(tour => {
-    const matchesSearch = tour.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         tour.cities.some(city => city.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesDestination = selectedDestination === "all" || tour.destination === selectedDestination;
-    const matchesCategory = selectedCategory === "all" || tour.category === selectedCategory;
-    const matchesRegion = selectedRegion === "all" || tour.region === selectedRegion;
-    const matchesFlight = selectedFlight === "all" || 
-                         (selectedFlight === "with" && tour.includeFlight) ||
-                         (selectedFlight === "without" && !tour.includeFlight);
-    
-    let matchesPrice = true;
-    if (selectedPriceRange === "low") matchesPrice = tour.price < 30000;
-    else if (selectedPriceRange === "medium") matchesPrice = tour.price >= 30000 && tour.price < 60000;
-    else if (selectedPriceRange === "high") matchesPrice = tour.price >= 60000;
-    
-    return matchesSearch && matchesDestination && matchesCategory && matchesRegion && matchesFlight && matchesPrice;
-  });
+  useEffect(() => {
+    if (!role) return;
+    loadTours();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role]);
+
+  const filtered = useMemo(() => {
+    const q = (searchQuery ?? "").trim().toLowerCase();
+    if (!q) return tours;
+
+    return tours.filter((t) => {
+      const hay = `${t.title ?? ""} ${t.description ?? ""} ${t.destination ?? ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [tours, searchQuery]);
+
+  const uploadCoverIfAny = async (): Promise<string | null> => {
+    if (!newCoverFile) return null;
+
+    const ext = newCoverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+    const safeExt = ["jpg", "jpeg", "png", "webp"].includes(ext) ? ext : "jpg";
+    const filename = `${crypto.randomUUID()}.${safeExt}`;
+    const path = `covers/${filename}`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from("tours")
+      .upload(path, newCoverFile, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: newCoverFile.type || undefined,
+      });
+
+    if (uploadErr) throw uploadErr;
+
+    const { data } = supabase.storage.from("tours").getPublicUrl(path);
+    return data.publicUrl ?? null;
+  };
+
+  const createTour = async () => {
+    if (!session?.user) {
+      setError("No hay sesión activa");
+      return;
+    }
+    if (!newTitle.trim()) {
+      setError("El título es obligatorio");
+      return;
+    }
+
+    setCreating(true);
+    setError(null);
+
+    try {
+      const priceNumber = newPrice.trim() === "" ? null : Number(newPrice.replace(",", "."));
+      const coverUrl = await uploadCoverIfAny();
+
+      const payload = {
+        title: newTitle.trim(),
+        description: newShortDesc.trim() || null,
+        destination: newDestination.trim() || null,
+        duration_text: newDuration.trim() || null,
+        highlights: newHighlights.trim() || null,
+        includes: newIncludes.trim() || null,
+        excludes: newExcludes.trim() || null,
+        meeting_point: newMeetingPoint.trim() || null,
+        itinerary: newItinerary.trim() || null,
+        cancellation_policy: newCancellation.trim() || null,
+        terms: newTerms.trim() || null,
+        price: Number.isFinite(priceNumber as any) ? priceNumber : null,
+        currency: newCurrency.trim() || "MXN",
+        cover_image_url: coverUrl,
+        is_published: newPublished,
+        created_by: session.user.id,
+      };
+
+      const { error: err } = await supabase.from("tours").insert(payload);
+      if (err) throw err;
+
+      // reset
+      setNewTitle("");
+      setNewDestination("");
+      setNewDuration("");
+      setNewShortDesc("");
+      setNewHighlights("");
+      setNewIncludes("");
+      setNewExcludes("");
+      setNewMeetingPoint("");
+      setNewItinerary("");
+      setNewCancellation("");
+      setNewTerms("");
+      setNewPrice("");
+      setNewCurrency("MXN");
+      setNewPublished(false);
+      setNewCoverFile(null);
+
+      await loadTours();
+    } catch (e: any) {
+      setError(e?.message ?? "Error creando tour");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl text-neutral-900 mb-2">Catálogo de Tours y Productos</h1>
-        <p className="text-neutral-600">
-          Explora nuestra selección completa de tours y paquetes turísticos
-        </p>
-      </div>
-
-      {/* Filters Bar */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-              <Input
-                placeholder="Buscar tours por nombre o destino..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            {/* Destination Filter */}
-            <Select value={selectedDestination} onValueChange={setSelectedDestination}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Destino" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los destinos</SelectItem>
-                <SelectItem value="Caribe">Caribe</SelectItem>
-                <SelectItem value="Europa">Europa</SelectItem>
-                <SelectItem value="Sudamérica">Sudamérica</SelectItem>
-                <SelectItem value="Norteamérica">Norteamérica</SelectItem>
-                <SelectItem value="Asia">Asia</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Category Filter */}
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las categorías</SelectItem>
-                <SelectItem value="Playa">Playa</SelectItem>
-                <SelectItem value="Cultural">Cultural</SelectItem>
-                <SelectItem value="Aventura">Aventura</SelectItem>
-                <SelectItem value="Ciudad">Ciudad</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Region Filter */}
-            <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Región" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las regiones</SelectItem>
-                <SelectItem value="México">México</SelectItem>
-                <SelectItem value="Europa Occidental">Europa Occidental</SelectItem>
-                <SelectItem value="América del Sur">América del Sur</SelectItem>
-                <SelectItem value="Estados Unidos">Estados Unidos</SelectItem>
-                <SelectItem value="Asia">Asia</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Flight Filter */}
-            <Select value={selectedFlight} onValueChange={setSelectedFlight}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Vuelo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los vuelos</SelectItem>
-                <SelectItem value="with">Con vuelo</SelectItem>
-                <SelectItem value="without">Sin vuelo</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Price Range Filter */}
-            <Select value={selectedPriceRange} onValueChange={setSelectedPriceRange}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Rango de precio" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los precios</SelectItem>
-                <SelectItem value="low">Bajo ($0 - $30,000)</SelectItem>
-                <SelectItem value="medium">Medio ($30,000 - $60,000)</SelectItem>
-                <SelectItem value="high">Alto ($60,000+)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Results Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-neutral-600">
-          Mostrando {filteredTours.length} tours disponibles
-        </p>
-        <div className="flex gap-2">
-          <Button 
-            variant="default"
-            className="bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600"
-            onClick={() => setSmartSearchOpen(true)}
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Buscador Inteligente
-          </Button>
-          <Button variant="outline">
-            <DollarSign className="w-4 h-4 mr-2" />
-            Ordenar por precio
-          </Button>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Tours</h1>
+          <p className="text-sm text-neutral-500">
+            {isAdmin ? "Admin: crea y publica tours." : "Agente: solo ves tours publicados."}
+          </p>
         </div>
+
+        <Button onClick={() => onNavigate("dashboard")}>Ir a Dashboard</Button>
       </div>
 
-      {/* Tours Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredTours.map((tour) => (
-          <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="flex flex-col md:flex-row">
-              {/* Image */}
-              <div className="md:w-1/3 h-64 md:h-auto bg-neutral-200 relative flex-shrink-0">
-                <img src={tour.image} alt={tour.name} className="w-full h-full object-cover" />
-                <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full shadow-lg">
-                  <span className="text-emerald-600">{tour.available} plazas</span>
-                </div>
+      {error && (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Crear tour (formulario completo)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Básico */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="newTitle">Título</Label>
+                <Input id="newTitle" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
               </div>
 
-              {/* Content */}
-              <CardContent className="flex-1 p-6 flex flex-col">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs">
-                      {tour.category}
-                    </span>
-                    <span className="px-2 py-1 bg-secondary-100 text-secondary-700 rounded text-xs">
-                      {tour.destination}
-                    </span>
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="newDestination">Destino</Label>
+                <Input
+                  id="newDestination"
+                  value={newDestination}
+                  onChange={(e) => setNewDestination(e.target.value)}
+                  placeholder="Ej. Cancún / CDMX / Riviera Maya"
+                />
+              </div>
 
-                  <h3 className="text-xl text-neutral-900 mb-3">{tour.name}</h3>
+              <div className="space-y-2">
+                <Label htmlFor="newDuration">Duración</Label>
+                <Input
+                  id="newDuration"
+                  value={newDuration}
+                  onChange={(e) => setNewDuration(e.target.value)}
+                  placeholder="Ej. 1 día / 3 noches / 5 horas"
+                />
+              </div>
 
-                  <div className="space-y-2 text-neutral-600 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-neutral-400" />
-                      <span>{tour.duration}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-neutral-400" />
-                      <span>Salidas: {tour.departures.join(", ")}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-neutral-400" />
-                      <span>{tour.available} espacios disponibles</span>
-                    </div>
-                    {tour.includeFlight && (
-                      <div className="flex items-center gap-2">
-                        <Plane className="w-4 h-4 text-neutral-400" />
-                        <span>Incluye vuelo</span>
-                      </div>
-                    )}
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="newCover">Imagen (cover)</Label>
+                <Input
+                  id="newCover"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setNewCoverFile(e.target.files?.[0] ?? null)}
+                />
+                {newCoverFile && <p className="text-xs text-neutral-500">Seleccionada: {newCoverFile.name}</p>}
+              </div>
 
-                  <div className="text-2xl text-primary-600 mb-4">
-                    {tour.priceText}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="newShortDesc">Descripción corta</Label>
+                <Textarea
+                  id="newShortDesc"
+                  value={newShortDesc}
+                  onChange={(e) => setNewShortDesc(e.target.value)}
+                  placeholder="Resumen del tour…"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Detalle */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="newHighlights">Highlights</Label>
+                <Textarea
+                  id="newHighlights"
+                  value={newHighlights}
+                  onChange={(e) => setNewHighlights(e.target.value)}
+                  placeholder="• Punto 1\n• Punto 2\n• Punto 3"
+                  rows={5}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="newItinerary">Itinerario</Label>
+                <Textarea
+                  id="newItinerary"
+                  value={newItinerary}
+                  onChange={(e) => setNewItinerary(e.target.value)}
+                  placeholder="Día 1: ...\nDía 2: ..."
+                  rows={5}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="newIncludes">Incluye</Label>
+                <Textarea
+                  id="newIncludes"
+                  value={newIncludes}
+                  onChange={(e) => setNewIncludes(e.target.value)}
+                  placeholder="• Transporte\n• Guía\n• Entradas…"
+                  rows={5}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="newExcludes">No incluye</Label>
+                <Textarea
+                  id="newExcludes"
+                  value={newExcludes}
+                  onChange={(e) => setNewExcludes(e.target.value)}
+                  placeholder="• Propinas\n• Comidas…"
+                  rows={5}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="newMeetingPoint">Punto de encuentro</Label>
+                <Textarea
+                  id="newMeetingPoint"
+                  value={newMeetingPoint}
+                  onChange={(e) => setNewMeetingPoint(e.target.value)}
+                  placeholder="Dirección / indicaciones…"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="newCancellation">Política de cancelación</Label>
+                <Textarea
+                  id="newCancellation"
+                  value={newCancellation}
+                  onChange={(e) => setNewCancellation(e.target.value)}
+                  placeholder="Reglas de cancelación…"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="newTerms">Términos</Label>
+                <Textarea
+                  id="newTerms"
+                  value={newTerms}
+                  onChange={(e) => setNewTerms(e.target.value)}
+                  placeholder="Términos y condiciones…"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Precio + publicar */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div className="space-y-2">
+                <Label htmlFor="newPrice">Precio</Label>
+                <Input id="newPrice" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} placeholder="Ej. 1890" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="newCurrency">Moneda</Label>
+                <Input id="newCurrency" value={newCurrency} onChange={(e) => setNewCurrency(e.target.value)} placeholder="MXN" />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={newPublished} onChange={(e) => setNewPublished(e.target.checked)} />
+                <span className="text-sm text-neutral-700">Publicado</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button onClick={createTour} disabled={creating}>
+                {creating ? "Creando..." : "Crear tour"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* LISTADO */}
+      {loading ? (
+        <p className="text-sm text-neutral-500">Cargando tours…</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {filtered.map((t) => (
+            <Card
+              key={t.id}
+              className="cursor-pointer hover:shadow-sm transition"
+              onClick={() => onNavigate("tour-detail", t.id)}
+            >
+              <div className="w-full h-40 overflow-hidden rounded-t-xl bg-neutral-100">
+                {t.cover_image_url ? (
+                  <img src={t.cover_image_url} alt={t.title} className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-sm text-neutral-400">
+                    Sin imagen
                   </div>
+                )}
+              </div>
+
+              <CardHeader className="space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <CardTitle className="text-lg">{t.title}</CardTitle>
+                  {!t.is_published && isAdmin && <Badge variant="secondary">Borrador</Badge>}
                 </div>
+                {t.destination && <p className="text-sm text-neutral-500">{t.destination}</p>}
+              </CardHeader>
 
-                <div className="flex gap-3">
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => onNavigate("tour-detail", tour.id)}
-                  >
-                    Ver detalles
-                  </Button>
-                  <Button 
-                    className="flex-1 bg-primary-500 hover:bg-primary-600"
-                    onClick={() => onNavigate("booking-form", tour.id)}
-                  >
-                    Solicitar reservación
+              <CardContent className="space-y-2">
+                <p className="text-sm text-neutral-600 line-clamp-3">{t.description ?? ""}</p>
+                <p className="font-medium">
+                  {t.currency ?? "MXN"} {t.price ?? ""}
+                </p>
+                <div className="pt-2">
+                  <Button variant="secondary" className="w-full">
+                    Ver detalle
                   </Button>
                 </div>
               </CardContent>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Smart Search Wizard */}
-      <SmartSearchWizard 
-        isOpen={smartSearchOpen}
-        onClose={() => setSmartSearchOpen(false)}
-        onSearch={handleSmartSearch}
-      />
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
